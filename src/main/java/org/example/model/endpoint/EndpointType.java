@@ -1,4 +1,4 @@
-package org.example.model;
+package org.example.model.endpoint;
 
 public enum EndpointType {
     STATIC, // this only requires, host and port for e.g., vhost:8080

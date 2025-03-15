@@ -1,10 +1,9 @@
-package org.example.config;
+package org.example.model.config;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.model.MicroserviceConfig;
 
 import java.util.Map;
 

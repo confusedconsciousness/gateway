@@ -3,13 +3,13 @@ package org.example;
 import io.vertx.core.Vertx;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.config.ServerConfig;
-import org.example.config.VertxConfig;
-import org.example.model.MicroserviceConfig;
-import org.example.model.StaticEndpoint;
-import org.example.verticle.ApiVerticle;
-import org.example.verticle.microservice.Photogram;
-import org.example.verticle.microservice.UserService;
+import org.example.model.config.ServerConfig;
+import org.example.model.config.VertxConfig;
+import org.example.model.config.MicroserviceConfig;
+import org.example.model.endpoint.StaticEndpoint;
+import org.example.verticle.GatewayVerticle;
+import org.example.microservice.Photogram;
+import org.example.microservice.UserService;
 
 import java.util.Map;
 
@@ -43,30 +43,38 @@ public class Server {
                         .build()))
                 .build();
 
+        // deploy our units
+        deployGatewayVerticle(vertx, config);
+        deployMicroservices(vertx, config);
+    }
 
-        vertx.deployVerticle(new ApiVerticle(config), res -> {
+    private void deployGatewayVerticle(Vertx vertx, ServerConfig config) {
+        vertx.deployVerticle(new GatewayVerticle(config), res -> {
             if (res.succeeded()) {
-                log.info("Verticle deployed");
+                log.info("Gateway Verticle deployed");
             } else {
-                log.error("Verticle deploy failed", res.cause());
+                log.error("Gateway Verticle deploy failed", res.cause());
             }
         });
+    }
 
-        // deploy the microservices as well in the same project
+    private void deployMicroservices(Vertx vertx, ServerConfig config) {
+        // deploy the microservices as well in the same project for simplicity
+        // our photogram service is responsible for handling posts
         vertx.deployVerticle(new Photogram(config), res -> {
             if (res.succeeded()) {
-                log.info("Photogram service deployed");
+                log.info("Photogram Service deployed");
             } else {
-                log.error("Photogram service deploy failed", res.cause());
+                log.error("Photogram Service deploy failed", res.cause());
             }
         });
+        // our user service is responsible for managing users
         vertx.deployVerticle(new UserService(config), res -> {
             if (res.succeeded()) {
-                log.info("User service deployed");
+                log.info("User Service deployed");
             } else {
-                log.error("User service deploy failed", res.cause());
+                log.error("User Service deploy failed", res.cause());
             }
         });
-
     }
 }

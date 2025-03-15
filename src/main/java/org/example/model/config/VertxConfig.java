@@ -1,6 +1,5 @@
-package org.example.config;
+package org.example.model.config;
 
-import io.vertx.core.Vertx;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

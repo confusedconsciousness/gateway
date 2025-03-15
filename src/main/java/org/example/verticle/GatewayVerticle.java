@@ -15,23 +15,23 @@ import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import lombok.extern.slf4j.Slf4j;
-import org.example.config.ServerConfig;
-import org.example.model.EndpointType;
-import org.example.model.MicroserviceConfig;
-import org.example.model.StaticEndpoint;
+import org.example.model.config.ServerConfig;
+import org.example.model.endpoint.EndpointType;
+import org.example.model.config.MicroserviceConfig;
+import org.example.model.endpoint.StaticEndpoint;
 
 import java.util.Objects;
+import java.util.UUID;
 
 @Slf4j
-public class ApiVerticle extends AbstractVerticle {
+public class GatewayVerticle extends AbstractVerticle {
     private final ServerConfig serverConfig;
     public static String DEFAULT_MOUNT_PATH = "/services/:service/*";
 
     private WebClient webClient;
 
-    public ApiVerticle(ServerConfig serverConfig) {
+    public GatewayVerticle(ServerConfig serverConfig) {
         this.serverConfig = serverConfig;
-
     }
 
     @Override
@@ -49,7 +49,7 @@ public class ApiVerticle extends AbstractVerticle {
         router.route(DEFAULT_MOUNT_PATH)
                 .handler(this::validator)
                 .handler(this::forwarder)
-                .handler(this::end);
+                .handler(this::endRouter);
 
         // the above was just a router, but we want to create an HTTP server
         // that will listen and when the request will land, our router will get triggered
@@ -66,8 +66,15 @@ public class ApiVerticle extends AbstractVerticle {
         // /services/:service/:path
         String service = routingContext.pathParam("service");
         String path = routingContext.pathParam("*");
+
+        String requestId = routingContext.get("requestId");
+        if (Strings.isNullOrEmpty(requestId)) {
+            requestId = UUID.randomUUID().toString();
+            routingContext.put("requestId", requestId);
+        }
+
         // let's log the request for which service this request was targeted for and for what endpoint
-        log.info("Received request on service: {}, for path: {}", service, path);
+        log.info("Received request on service: {}, for path: {}, with requestId: {}", service, path, requestId);
         // check if the service is even onboarded or visible to gateway?
         if (serverConfig.getServiceConfigs().containsKey(service)) {
             // we are just printing the info here
@@ -91,6 +98,8 @@ public class ApiVerticle extends AbstractVerticle {
     public void forwarder(RoutingContext routingContext) {
         // this handler forwards the request to the upstream
         String requestUri = buildRequestUri(routingContext);
+
+        log.info("Upstream Request URI: {}", requestUri);
         HttpRequest<Buffer> httpRequest = getHttpRequest(routingContext, requestUri);
         httpRequest.send(clientResponse -> handleResponse(routingContext, clientResponse));
     }
@@ -108,8 +117,8 @@ public class ApiVerticle extends AbstractVerticle {
         routingContext.next();
     }
 
-    public void end(RoutingContext routingContext) {
-        log.info("Received end request");
+    public void endRouter(RoutingContext routingContext) {
+        log.info("Ending Request");
     }
 
 
@@ -122,10 +131,10 @@ public class ApiVerticle extends AbstractVerticle {
     }
 
     public String buildRequestUri(RoutingContext routingContext) {
-        // microservice config can never be null if we are at this handler
-        // find the host and port for the service where the request needs to be forwarded
+
         MicroserviceConfig microserviceConfig = getServiceConfig(routingContext);
-        // we are only covering the static part
+        // find the host and port for the service where the request needs to be forwarded
+        // we are only covering the static endpoint part
         // in order to build up the complete request, we need to first get the host and port of the microservice and
         // then append the path to it
         // host:port/path

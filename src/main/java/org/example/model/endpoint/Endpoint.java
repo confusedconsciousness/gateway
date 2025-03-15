@@ -1,4 +1,4 @@
-package org.example.model;
+package org.example.model.endpoint;
 
 import lombok.Data;
 

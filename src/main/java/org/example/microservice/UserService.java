@@ -1,12 +1,12 @@
-package org.example.verticle.microservice;
+package org.example.microservice;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
-import org.example.config.ServerConfig;
-import org.example.model.MicroserviceConfig;
-import org.example.model.StaticEndpoint;
+import org.example.model.config.ServerConfig;
+import org.example.model.config.MicroserviceConfig;
+import org.example.model.endpoint.StaticEndpoint;
 
 public class UserService extends AbstractVerticle {
     private final ServerConfig serverConfig;
@@ -26,7 +26,6 @@ public class UserService extends AbstractVerticle {
         router.route("/create").handler(routingContext -> {
             routingContext.json(new JsonObject().put("message", "Successfully Registered an User"));
         });
-
 
         vertx.createHttpServer()
                 .requestHandler(router)
