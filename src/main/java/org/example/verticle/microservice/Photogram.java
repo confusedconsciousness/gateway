@@ -1,4 +1,4 @@
-package org.example.verticle.services;
+package org.example.verticle.microservice;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;

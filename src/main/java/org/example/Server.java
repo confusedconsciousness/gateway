@@ -8,8 +8,8 @@ import org.example.config.VertxConfig;
 import org.example.model.MicroserviceConfig;
 import org.example.model.StaticEndpoint;
 import org.example.verticle.ApiVerticle;
-import org.example.verticle.services.Photogram;
-import org.example.verticle.services.UserService;
+import org.example.verticle.microservice.Photogram;
+import org.example.verticle.microservice.UserService;
 
 import java.util.Map;
 
