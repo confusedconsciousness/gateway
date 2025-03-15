@@ -1,0 +1,5 @@
+microserviceConfig:
+  photogram:
+    type: static
+    host: photogram.simple.com
+    port: 8080
